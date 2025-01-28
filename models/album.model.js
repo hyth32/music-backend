@@ -32,7 +32,20 @@ Album.createModel('album', false, {
         allowNull: false,
     },
     year: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null,
+    },
+    tracks_count: {
         type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    spotify_url: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+    },
+    image_url: {
+        type: DataTypes.TEXT,
         allowNull: true,
         defaultValue: null,
     }

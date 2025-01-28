@@ -23,6 +23,10 @@ Artist.createModel('artist', false, {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+    spotify_url: {
+        type: DataTypes.TEXT,
+        allowNull: false,
     }
 })
 

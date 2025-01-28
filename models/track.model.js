@@ -10,11 +10,11 @@ class Track extends BaseModel {
             as: 'artists',
         })
 
-        this.belongsToMany(models.Album, {
+        this.belongsTo(models.Album, {
             through: models.AlbumTrack,
             foreignKey: 'track_id',
             otherKey: 'album_id',
-            as: 'albums',
+            as: 'album',
         })
     }
 
@@ -32,6 +32,15 @@ Track.createModel('track', false, {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+    spotify_url: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+    },
+    file_url: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null,
     }
 })
 

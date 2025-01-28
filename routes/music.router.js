@@ -12,4 +12,4 @@ class MusicRouter extends BaseRouter {
     }
 }
 
-export default MusicRouter
+export default new MusicRouter().router
