@@ -40,16 +40,6 @@ class MusicController {
         }
     }
 
-    async getTrackUrl(req, res, next) {
-        const {} = req.query
-
-        try {
-            
-        } catch (error) {
-            next(error)
-        }
-    }
-
     /**
      * Получение списка треков альбома
      */

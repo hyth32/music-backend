@@ -9,14 +9,14 @@ export const sequelize = new Sequelize({
 })
 
 export const connectDB = async () => {
-    // try {
-    //     await sequelize.authenticate()
-    //     console.log('Подключение к базе данных успешно установлено.')
+    try {
+        await sequelize.authenticate()
+        console.log('Подключение к базе данных успешно установлено.')
 
-    //     await sequelize.sync({ alter: true })
-    //     console.log('Модели синхронизированы.')
-    // } catch (error) {
-    //     console.error('Не удалось подключиться к базе данных:', error)
-    //     process.exit(1)
-    // }
+        await sequelize.sync({ alter: true })
+        console.log('Модели синхронизированы.')
+    } catch (error) {
+        console.error('Не удалось подключиться к базе данных:', error)
+        process.exit(1)
+    }
 }
