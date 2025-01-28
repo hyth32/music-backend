@@ -1,31 +1,17 @@
-import { Model, DataTypes } from '@sequelize/core'
-import { sequelize } from '../db.js'
+import { DataTypes } from '@sequelize/core'
+import BaseModel from './base.model.js'
 
-class ArtistAlbum extends Model { }
+class ArtistAlbum extends BaseModel { }
 
-ArtistAlbum.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            allowNull: false,
-            autoIncrement: true,
-        },
-        artist_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        album_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
+ArtistAlbum.createModel('artist_album', false, {
+    artist_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
     },
-    {
-        sequelize,
-        tableName: 'artist_album',
-        modelName: 'ArtistAlbum',
-        timestamps: false,
-    }
-)
+    album_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+})
 
 export default ArtistAlbum

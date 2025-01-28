@@ -1,7 +1,7 @@
-import { Model, DataTypes } from '@sequelize/core'
-import { sequelize } from '../db.js'
+import { DataTypes } from '@sequelize/core'
+import BaseModel from './base.model.js'
 
-class Artist extends Model {
+class Artist extends BaseModel {
     static associate(models) {
         Artist.belongsToMany(models.Track, {
             through: models.ArtistTrack,
@@ -19,25 +19,11 @@ class Artist extends Model {
     }
 }
 
-Artist.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            allowNull: false,
-            autoIncrement: true,
-        },
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        }
-    },
-    {
-        sequelize,
-        tableName: 'artist',
-        modelName: 'Artist',
-        timestamps: false,
+Artist.createModel('artist', false, {
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false,
     }
-)
+})
 
 export default Artist

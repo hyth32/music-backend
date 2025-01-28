@@ -1,16 +1,16 @@
-import { Model, DataTypes } from '@sequelize/core'
-import { sequelize } from '../db.js'
+import { DataTypes } from '@sequelize/core'
+import BaseModel from './base.model.js'
 
-class Album extends Model {
+class Album extends BaseModel {
     static associate(models) {
-        Album.belongsToMany(models.Artist, {
+        this.belongsToMany(models.Artist, {
             through: models.ArtistAlbum,
             foreignKey: 'album_id',
             otherKey: 'artist_id',
             as: 'artists',
         })
 
-        Album.belongsToMany(models.Track, {
+        this.belongsToMany(models.Track, {
             through: models.AlbumTrack,
             foreignKey: 'album_id',
             otherKey: 'track_id',
@@ -19,30 +19,16 @@ class Album extends Model {
     }
 }
 
-Album.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            allowNull: false,
-            autoIncrement: true,
-        },
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        year: {
-            type: DataTypes.STRING,
-            allowNull: true,
-            defaultValue: null,
-        }
-    }, 
-    {
-        sequelize,
-        tableName: 'album',
-        modelName: 'Album',
-        timestamps: false,
+Album.createModel('album', false, {
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    year: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: null,
     }
-)
+})
 
 export default Album
