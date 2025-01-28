@@ -17,6 +17,13 @@ class Album extends BaseModel {
             as: 'tracks',
         })
     }
+
+    getArtistNames() {
+        if (this.artists.length > 1) {
+            return this.artists.map(artist => artist.name).join(', ')
+        }
+        return this.artists[0].name 
+    }
 }
 
 Album.createModel('album', false, {

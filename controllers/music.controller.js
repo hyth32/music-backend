@@ -24,16 +24,9 @@ class MusicController {
                 return []
             }
     
-            const preparedTracks = tracks.map(track => ({
-                artist: track.album.artists[0].name,
-                duration: track.duration_ms,
-                name: track.name,
-                url: track.external_urls.spotify,
-            }))
-    
             ApiHelper.sendData(res, {
                 total,
-                data: preparedTracks,
+                data: tracks.map(track => track.toJSON()),
             })
         } catch (error) {
             next(error)

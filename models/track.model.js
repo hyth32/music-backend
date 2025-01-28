@@ -17,6 +17,15 @@ class Track extends BaseModel {
             as: 'albums',
         })
     }
+
+    toJSON() {
+        return {
+            artist: this.album.getArtistNames(),
+            duration: this.duration_ms,
+            name: this.name,
+            url: this.external_urls.spotify,
+        }
+    }
 }
 
 Track.createModel('track', false, {
