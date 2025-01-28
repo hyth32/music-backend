@@ -3,14 +3,14 @@ import BaseModel from './base.model.js'
 
 class Artist extends BaseModel {
     static associate(models) {
-        Artist.belongsToMany(models.Track, {
+        this.belongsToMany(models.Track, {
             through: models.ArtistTrack,
             foreignKey: 'artist_id',
             otherKey: 'track_id',
             as: 'tracks',
         })
 
-        Artist.belongsToMany(models.Album, {
+        this.belongsToMany(models.Album, {
             through: models.ArtistAlbum,
             foreignKey: 'artist_id',
             otherKey: 'album_id',
