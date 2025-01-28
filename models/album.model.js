@@ -44,3 +44,5 @@ Album.init(
         timestamps: false,
     }
 )
+
+export default Album

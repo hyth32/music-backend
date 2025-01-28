@@ -1,5 +1,5 @@
 import { Model, DataTypes } from '@sequelize/core'
-import { sequelize } from '../db'
+import { sequelize } from '../db.js'
 
 class ArtistAlbum extends Model { }
 
