@@ -1,5 +1,6 @@
 import { DataTypes } from '@sequelize/core'
 import BaseModel from './base.model.js'
+import Artist from './artist.model.js'
 
 class ArtistAlbum extends BaseModel {
     static async createNew(artist_id, album_id) {
@@ -7,6 +8,15 @@ class ArtistAlbum extends BaseModel {
             where: { artist_id, album_id },
             defaults: { artist_id, album_id },
         })
+    }
+
+    static async getArtistNameByAlbum(albumId) {
+        const artistAlbumRecord = await this.findOne({
+            where: { album_id: albumId },
+            include: { model: Artist }
+        })
+
+        return artistAlbumRecord.artist.name
     }
 }
 

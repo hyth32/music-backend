@@ -18,6 +18,15 @@ class Track extends BaseModel {
         })
     }
 
+    static async getAlbum(spotify_url) {
+        const trackRecord = await this.findOne({
+            where: { spotify_url },
+            include: { association: this.associations.albums }
+        })
+
+        return trackRecord.albums[0]
+    }
+
     toJSON() {
         return {
             artist: this.album.getArtistNames(),
