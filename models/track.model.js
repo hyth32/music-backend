@@ -3,18 +3,18 @@ import BaseModel from "./base.model.js"
 
 class Track extends BaseModel {
     static associate(models) {
-        this.belongsToMany(models.Artist, {
-            through: models.ArtistTrack,
-            foreignKey: 'track_id',
-            otherKey: 'artist_id',
-            as: 'artists',
-        })
-
         this.belongsTo(models.Album, {
             through: models.AlbumTrack,
-            foreignKey: 'track_id',
+            foreignKey: 'id',
             otherKey: 'album_id',
             as: 'album',
+        })
+    }
+
+    static async createNew(name, spotify_url) {
+        return await this.findOrCreate({
+            where: { name, spotify_url },
+            defaults: { name, spotify_url }
         })
     }
 

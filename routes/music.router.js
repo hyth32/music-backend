@@ -9,6 +9,7 @@ class MusicRouter extends BaseRouter {
 
     setupRoutes() {
         this.router.get('/tracks', this.bindControllerMethod('listTracks'))
+        this.router.post('/tracks/file', this.bindControllerMethod('getMusicFile'))
     }
 }
 

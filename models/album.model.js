@@ -18,6 +18,13 @@ class Album extends BaseModel {
         })
     }
 
+    static async createNew(name, year, tracks_count, spotify_url, image_url = null) {
+        return await this.findOrCreate({
+            where: { name, year, tracks_count, spotify_url, image_url },
+            defaults: { name, year, tracks_count, spotify_url, image_url },
+        })
+    }
+
     getArtistNames() {
         if (this.artists.length > 1) {
             return this.artists.map(artist => artist.name).join(', ')

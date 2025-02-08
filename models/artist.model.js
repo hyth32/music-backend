@@ -17,6 +17,13 @@ class Artist extends BaseModel {
             as: 'albums',
         })
     }
+
+    static async createNew(name, spotify_url) {
+        return await this.findOrCreate({
+            where: { name, spotify_url },
+            defaults: { name, spotify_url },
+        })
+    }
 }
 
 Artist.createModel('artist', false, {
