@@ -7,16 +7,14 @@ import ApiHelper from '../helpers/api.helper.js'
 import ConfigHelper from '../helpers/config.helper.js'
 import accessTokenInstance from '../instances/accessToken.instance.js'
 import Track from '../models/track.model.js'
-import Artist from '../models/artist.model.js'
-import Album from '../models/album.model.js'
-import ArtistTrack from '../models/artistTrack.model.js'
 import ArtistAlbum from '../models/artistAlbum.model.js'
-import AlbumTrack from '../models/albumTrack.model.js'
 
 class SpotifyService {
     constructor(accessToken = accessTokenInstance) {
         this.tokenUrl = 'https://accounts.spotify.com/api/token'
-        this.apiUrl = 'https://api.spotify.com/v1/search'
+        this.searchApiUrl = 'https://api.spotify.com/v1/search'
+        this.albumsApiUrl = 'https://api.spotify.com/v1/albums'
+        this.artistsTopApiUrl = 'https://api.spotify.com/v1/artists'
         this.accessTokenInstance = accessToken
     }
 
@@ -53,58 +51,48 @@ class SpotifyService {
     }
 
     /**
-     * Получение списка треков по типу поиска
+     * Получение списка треков по поисковому запросу
      */
-    async getList(type, phrase, offset = 0, limit = 10) {
-        if (!['track', 'album', 'artist', 'playlist', 'show', 'episode', 'audiobook'].includes(type)) {
-            ApiHelper.throwErrorMessage('Неподдерживаемый тип')
-        }
-    
-        const accessToken = await this.getValidToken()
-        
+    async searchTracks(q, offset, limit) {
         try {
-            return await axios.get(this.apiUrl, {
-                headers: { 'Authorization': `Bearer ${accessToken}` },
-                params: { q: phrase, type, offset, limit },
+            const searchTypes = ['track'].join(',')
+            const accessToken = await this.getValidToken()
+            return await axios.get(this.searchApiUrl, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+                params: { type: searchTypes, q, limit, offset },
             })
         } catch (error) {
-            ApiHelper.throwErrorMessage(`Ошибка получения списка: ${error.message}`)
+            ApiHelper.throwErrorMessage(`Ошибка получения списка треков: ${error.message}`)
         }
     }
 
     /**
-     * Общий метод поиска
+     * Получение списка популярных треков исполнителя по ID
      */
-    async search(type, phrase, offset, limit) {
+    async listArtistTopTracks(id, offset, limit) {
         try {
-            return await this.getList(type, phrase, offset, limit)
+            const accessToken = await this.getValidToken()
+            return await axios.get(`${this.artistsTopApiUrl}/${id}/top-tracks`, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+                params: { limit, offset }
+            })
         } catch (error) {
-            ApiHelper.throwErrorMessage(`Ошибка: ${error.message}`)
+            ApiHelper.throwErrorMessage(`Ошибка получения списка треков: ${error.message}`)
         }
     }
 
     /**
-     * Сохранение найденных треков в бд
+     * Получение списка треков альбома по ID
      */
-    async saveTracksToDB(tracks) {
-        tracks.forEach(async track => {
-            const trackRecord = await Track.createNew(track.name, track.external_urls.spotify)
-            const albumRecord = await Album.createNew(
-                track.album.name,
-                track.album.release_date,
-                track.album.total_tracks,
-                track.album.external_urls.spotify,
-                track.album.images ? track.album.images[0].url : null
-            )
-
-            await AlbumTrack.createNew(albumRecord[0].id, trackRecord[0].id)
-
-            track.artists.forEach(async artist => {
-                const artistRecord = await Artist.createNew(artist.name, artist.external_urls.spotify)
-                await ArtistAlbum.createNew(artistRecord[0].id, albumRecord[0].id)
-                await ArtistTrack.createNew(artistRecord[0].id, trackRecord[0].id)
+    async listAlbumTracks(id) {
+        try {
+            const accessToken = await this.getValidToken()
+            return await axios.get(`${this.albumsApiUrl}/${id}/tracks`, {
+                headers: { Authorization: `Bearer ${accessToken}` },
             })
-        })
+        } catch (error) {
+            ApiHelper.throwErrorMessage(`Ошибка получения списка треков: ${error.message}`)
+        }
     }
 
     /**
@@ -143,7 +131,7 @@ class SpotifyService {
 
         try {
             const files = await fs.promises.readdir(folderPath)
-            const musicFile = files.find(file => path.extname(file) === '.m4a')
+            const musicFile = files.find((file) => path.extname(file) === '.m4a')
             const serverFolderPath = path.join('http://localhost:5000', 'assets', artistName, albumName)
 
             return `${serverFolderPath}/${musicFile}`

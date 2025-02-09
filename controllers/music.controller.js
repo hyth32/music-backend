@@ -14,7 +14,7 @@ class MusicController {
         const { q, offset = 0, limit = 10 } = ApiHelper.getQuery(req)
 
         try {
-            const rawTracks = await this.spotifyService.search('track', q, offset, limit)
+            const rawTracks = await this.spotifyService.searchTracks(q, offset, limit)
 
             const trackData = rawTracks.data.tracks
             const total = trackData.total
@@ -22,16 +22,23 @@ class MusicController {
 
             if (!tracks.length) {
                 console.log('Данные не найдены')
-                return { total: 0, data: [] }
+                ApiHelper.sendData(res, { total: 0, data: [] })
             }
 
-            await this.spotifyService.saveTracksToDB(tracks)
-
             const preparedData = tracks.map(track => ({
-                artist: track.artists[0].name,
-                duration: track.duration_ms,
                 name: track.name,
-                url: track.external_urls.spotify,
+                spotify_id: track.id,
+                spotify_url: track.external_urls.spotify,
+                duration: track.duration_ms,
+                artist: {
+                    name: track.artists[0].name,
+                    spotify_id: track.artists[0].id,
+                },
+                album: {
+                    name: track.album.name,
+                    cover: track.album.images[0].url ?? null,
+                    spotify_id: track.album.id,
+                }
             }))
     
             ApiHelper.sendData(res, { total, data: preparedData })
@@ -41,7 +48,77 @@ class MusicController {
     }
 
     /**
-     * Получение файла 
+     * Получение списка треков альбома
+     */
+    async getAlbumTracks(req, res, next) {
+        const { id } = ApiHelper.getParams(req)
+        const { offset = 0, limit = 10 } = ApiHelper.getQuery(req)
+
+        try {
+            const rawAlbums = await this.spotifyService.listAlbumTracks(id, offset, limit)
+            
+            const albumData = rawAlbums.data
+            const total = albumData.total
+            const albums = albumData.items
+
+            const preparedData = albums.map(item => ({
+                name: item.name,
+                duration: item.duration_ms,
+                spotify_id: item.id,
+                spotify_url: item.external_urls.spotify,
+                artist: {
+                    name: item.artists[0].name,
+                    spotify_id: item.artists[0].name,
+                },
+            }))
+
+            ApiHelper.sendData(res, { total, data: preparedData })
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    /**
+     * Получение списка треков исполнителя
+     */
+    async getArtistTracks(req, res, next) {
+        const { id } = ApiHelper.getParams(req)
+        const { offset = 0, limit = 10 } = ApiHelper.getQuery(req)
+
+        try {
+            const rawTracks = await this.spotifyService.listArtistTopTracks(id, offset, limit)
+            const trackData = rawTracks.data
+            const tracks = trackData.tracks
+
+            if (!tracks.length) {
+                console.log('Данные не найдены')
+                ApiHelper.sendData(res, { total: 0, data: [] })
+            }
+
+            const preparedData = tracks.map(track => ({
+                name: track.name,
+                spotify_id: track.id,
+                spotify_url: track.external_urls.spotify,
+                duration: track.duration_ms,
+                artist: {
+                    name: track.artists[0].name,
+                    spotify_id: track.artists[0].id,
+                },
+                album: {
+                    name: track.album.name,
+                    cover: track.album.images[0].url ?? null,
+                    spotify_id: track.album.id,
+                }
+            }))
+
+            ApiHelper.sendData(res, { total: 10, data: preparedData })
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    /**
+     * Получение ссылки на файл по Spotify URL 
      */
     async getMusicFile(req, res, next) {
         const { url } = ApiHelper.getBody(req)
@@ -57,16 +134,6 @@ class MusicController {
             next(error)
         }
     }
-
-    /**
-     * Получение списка треков альбома
-     */
-    async getAlbum() {}
-
-    /**
-     * Получение списка треков исполнителя
-     */
-    async getArtist() {}
 }
 
 export default MusicController
