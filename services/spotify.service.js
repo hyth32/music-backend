@@ -57,10 +57,37 @@ class SpotifyService {
         try {
             const searchTypes = ['track'].join(',')
             const accessToken = await this.getValidToken()
-            return await axios.get(this.searchApiUrl, {
+            const response = await axios.get(this.searchApiUrl, {
                 headers: { Authorization: `Bearer ${accessToken}` },
                 params: { type: searchTypes, q, limit, offset },
             })
+
+            const trackData = response.data.tracks
+            const total = trackData.total
+            const tracks = trackData.items
+
+            if (!tracks.length) {
+                console.log('Данные не найдены')
+                return { total: 0, data: [] }
+            }
+
+            const preparedData = tracks.map(track => ({
+                name: track.name,
+                spotify_id: track.id,
+                spotify_url: track.external_urls.spotify,
+                duration: track.duration_ms,
+                artist: {
+                    name: track.artists[0].name,
+                    spotify_id: track.artists[0].id,
+                },
+                album: {
+                    name: track.album.name,
+                    cover: track.album.images[0].url ?? null,
+                    spotify_id: track.album.id,
+                }
+            }))
+
+            return { total, data: preparedData }
         } catch (error) {
             ApiHelper.throwErrorMessage(`Ошибка получения списка треков: ${error.message}`)
         }
@@ -72,10 +99,36 @@ class SpotifyService {
     async listArtistTopTracks(id, offset, limit) {
         try {
             const accessToken = await this.getValidToken()
-            return await axios.get(`${this.artistsTopApiUrl}/${id}/top-tracks`, {
+            const response = await axios.get(`${this.artistsTopApiUrl}/${id}/top-tracks`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
                 params: { limit, offset }
             })
+
+            const trackData = response.data
+            const tracks = trackData.tracks
+
+            if (!tracks.length) {
+                console.log('Данные не найдены')
+                return { total: 0, data: [] }
+            }
+
+            const preparedData = tracks.map(track => ({
+                name: track.name,
+                spotify_id: track.id,
+                spotify_url: track.external_urls.spotify,
+                duration: track.duration_ms,
+                artist: {
+                    name: track.artists[0].name,
+                    spotify_id: track.artists[0].id,
+                },
+                album: {
+                    name: track.album.name,
+                    cover: track.album.images[0].url ?? null,
+                    spotify_id: track.album.id,
+                }
+            }))
+
+            return { total: 10, data: preparedData }
         } catch (error) {
             ApiHelper.throwErrorMessage(`Ошибка получения списка треков: ${error.message}`)
         }
@@ -87,9 +140,31 @@ class SpotifyService {
     async listAlbumTracks(id) {
         try {
             const accessToken = await this.getValidToken()
-            return await axios.get(`${this.albumsApiUrl}/${id}/tracks`, {
+            const response = await axios.get(`${this.albumsApiUrl}/${id}/tracks`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
             })
+
+            const albumData = response.data
+            const total = albumData.total
+            const albums = albumData.items
+
+            if (!albums.length) {
+                console.log('Данные не найдены')
+                return { total: 0, data: [] }
+            }
+
+            const preparedData = albums.map(item => ({
+                name: item.name,
+                duration: item.duration_ms,
+                spotify_id: item.id,
+                spotify_url: item.external_urls.spotify,
+                artist: {
+                    name: item.artists[0].name,
+                    spotify_id: item.artists[0].name,
+                },
+            }))
+
+            return { total, data: preparedData }
         } catch (error) {
             ApiHelper.throwErrorMessage(`Ошибка получения списка треков: ${error.message}`)
         }
@@ -105,6 +180,9 @@ class SpotifyService {
 
         return new Promise((resolve, reject) => {
             execFile(scriptPath, [url], (error, stdout, stderr) => {
+                console.log(stdout)
+                console.log(stderr)
+                
                 if (error) {
                     console.log(`Error: ${error}`)
                     reject(new Error(`Ошибка скачивания: ${stderr}`))
@@ -122,6 +200,7 @@ class SpotifyService {
         const album = await Track.getAlbum(url)
         const artistName = await ArtistAlbum.getArtistNameByAlbum(album.id)
         const albumName = album.name
+        console.log(url)
 
         await this.downloadFile(url)
 
@@ -130,6 +209,7 @@ class SpotifyService {
         const folderPath = path.join(__dirname, '../', 'assets', artistName, albumName)
 
         try {
+            await fs.promises.mkdir(folderPath, { recursive: true })
             const files = await fs.promises.readdir(folderPath)
             const musicFile = files.find((file) => path.extname(file) === '.m4a')
             const serverFolderPath = path.join('http://localhost:5000', 'assets', artistName, albumName)
